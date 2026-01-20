@@ -1,0 +1,187 @@
+import streamlit as st
+import math
+
+# ----------------------------------------
+# タイトル
+# ----------------------------------------
+st.title("高校数学レベル計算機（ルート・べき乗・関数）")
+
+st.write("高校範囲の基本的な関数をまとめた **計算機アプリ** です。")
+st.write("左側のメニューから、使いたい機能を選んでください。")
+
+# ----------------------------------------
+# サイドバーでモード選択
+# ----------------------------------------
+mode = st.sidebar.selectbox(
+    "計算モードを選んでください",
+    (
+        "四則演算",
+        "べき乗（指数）",
+        "ルート（平方根・n乗根）",
+        "指数関数・対数関数",
+        "三角関数",
+    ),
+)
+
+# ----------------------------------------
+# 1. 四則演算モード
+# ----------------------------------------
+if mode == "四則演算":
+    st.header("四則演算")
+
+    st.write("2つの数に対して、足し算・引き算・掛け算・割り算を行います。")
+
+    # number_input は数値専用の入力欄
+    a = st.number_input("1つ目の数（a）", value=0.0)
+    b = st.number_input("2つ目の数（b）", value=0.0)
+
+    # ボタンを押したときだけ計算する
+    if st.button("計算する"):
+        st.subheader("結果")
+
+        st.write(f"a + b = {a + b}")
+        st.write(f"a - b = {a - b}")
+        st.write(f"a × b = {a * b}")
+
+        # 0 で割るとエラーになるので、条件分岐で防ぐ
+        if b != 0:
+            st.write(f"a ÷ b = {a / b}")
+        else:
+            st.write("a ÷ b は計算できません（b = 0 のため）。")
+
+# ----------------------------------------
+# 2. べき乗モード
+# ----------------------------------------
+elif mode == "べき乗（指数）":
+    st.header("べき乗（指数）")
+
+    st.write("a^n（a の n 乗）を計算します。")
+
+    base = st.number_input("底（a）", value=2.0)
+    exp = st.number_input("指数（n）", value=2.0)
+
+    if st.button("べき乗を計算する"):
+        # Python では ** がべき乗（power）の演算子
+        result = base ** exp
+        st.subheader("結果")
+        st.write(f"{base} ^ {exp} = {result}")
+
+# ----------------------------------------
+# 3. ルート（平方根・n乗根）モード
+# ----------------------------------------
+elif mode == "ルート（平方根・n乗根）":
+    st.header("ルート（平方根・n乗根）")
+
+    st.write("平方根（√x）や、一般の n 乗根（x^(1/n)）を計算します。")
+
+    x = st.number_input("値（x）", value=4.0)
+    n = st.number_input("根の次数（n, 2 なら平方根）", value=2.0)
+
+    if st.button("ルートを計算する"):
+        st.subheader("結果")
+
+        # 負の数の偶数乗根は実数では定義されないのでチェック
+        if x < 0 and n % 2 == 0:
+            st.write("x が負で n が偶数のとき、実数の n 乗根は存在しません。")
+        else:
+            # n 乗根は x ** (1/n) として計算
+            try:
+                root = x ** (1.0 / n)
+                st.write(f"{x} の {n} 乗根 = {root}")
+            except ZeroDivisionError:
+                st.write("n = 0 のときは計算できません。")
+
+# ----------------------------------------
+# 4. 指数関数・対数関数モード
+# ----------------------------------------
+elif mode == "指数関数・対数関数":
+    st.header("指数関数・対数関数")
+
+    st.write("指数関数（e^x, a^x）や対数関数（自然対数 ln, 底 a の対数 log_a）を計算します。")
+
+    tab1, tab2 = st.tabs(["指数関数", "対数関数"])
+
+    # ---- 指数関数 ----
+    with tab1:
+        st.subheader("指数関数")
+        x = st.number_input("指数の値（x）", value=1.0, key="exp_x")
+
+        base_choice = st.radio(
+            "底を選択してください",
+            ("自然指数関数 e^x", "任意の底 a^x"),
+            key="exp_base_choice",
+        )
+
+        if base_choice == "自然指数関数 e^x":
+            if st.button("e^x を計算する"):
+                result = math.exp(x)  # e^x
+                st.write(f"e^{x} = {result}")
+        else:
+            a = st.number_input("底（a, a > 0, a ≠ 1）", value=2.0, key="exp_a")
+            if st.button("a^x を計算する"):
+                result = a ** x
+                st.write(f"{a}^{x} = {result}")
+
+    # ---- 対数関数 ----
+    with tab2:
+        st.subheader("対数関数")
+        y = st.number_input("対象の値（y, y > 0）", value=2.7182818, key="log_y")
+
+        log_type = st.radio(
+            "対数の種類を選択してください",
+            ("自然対数 ln(y)", "常用対数 log10(y)", "底 a の対数 log_a(y)"),
+            key="log_type",
+        )
+
+        if log_type == "自然対数 ln(y)":
+            if st.button("ln(y) を計算する"):
+                if y > 0:
+                    st.write(f"ln({y}) = {math.log(y)}")
+                else:
+                    st.write("y は 0 より大きい必要があります。")
+        elif log_type == "常用対数 log10(y)":
+            if st.button("log10(y) を計算する"):
+                if y > 0:
+                    st.write(f"log10({y}) = {math.log10(y)}")
+                else:
+                    st.write("y は 0 より大きい必要があります。")
+        else:
+            a = st.number_input("底（a, a > 0, a ≠ 1）", value=2.0, key="log_a")
+            if st.button("log_a(y) を計算する"):
+                if y <= 0:
+                    st.write("y は 0 より大きい必要があります。")
+                elif a <= 0 or a == 1:
+                    st.write("底 a は 0 より大きく、かつ 1 以外である必要があります。")
+                else:
+                    # 対数の底の変換公式 log_a(y) = ln(y) / ln(a)
+                    result = math.log(y) / math.log(a)
+                    st.write(f"log_{a}({y}) = {result}")
+
+# ----------------------------------------
+# 5. 三角関数モード
+# ----------------------------------------
+elif mode == "三角関数":
+    st.header("三角関数")
+
+    st.write("sin, cos, tan を計算します（角度は度数法で入力）。")
+
+    angle_deg = st.number_input("角度（度）", value=30.0)
+
+    if st.button("三角関数を計算する"):
+        st.subheader("結果")
+
+        # math.sin などはラジアンで計算するので、度 → ラジアン に変換
+        angle_rad = math.radians(angle_deg)
+
+        sin_val = math.sin(angle_rad)
+        cos_val = math.cos(angle_rad)
+
+        st.write(f"sin({angle_deg}°) = {sin_val}")
+        st.write(f"cos({angle_deg}°) = {cos_val}")
+
+        # cos が 0 のとき tan は定義されないのでチェック
+        if abs(cos_val) < 1e-12:
+            st.write(f"tan({angle_deg}°) は定義されません（cos = 0）。")
+        else:
+            tan_val = math.tan(angle_rad)
+            st.write(f"tan({angle_deg}°) = {tan_val}")
